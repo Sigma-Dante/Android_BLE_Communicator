@@ -1,6 +1,6 @@
 package com.example.ble_communicator_java;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
