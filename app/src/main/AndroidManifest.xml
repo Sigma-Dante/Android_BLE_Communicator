@@ -3,6 +3,10 @@
     package="com.example.ble_communicator_java">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,6 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity_BTLE_Services" />
+
+        <service
+            android:name=".Service_BTLE_GATT"
+            android:enabled="true"
+            android:exported="true"></service>
+
     </application>
 
 </manifest>

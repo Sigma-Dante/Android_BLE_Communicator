@@ -1,5 +1,6 @@
 package com.example.ble_communicator_java;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.ComponentName;
@@ -7,7 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
+// import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Activity_BTLE_Services extends AppCompatActivity implements ExpandableListView.OnChildClickListener {
+public class Activity_BTLE_Services extends Activity implements ExpandableListView.OnChildClickListener {
     private final static String TAG = Activity_BTLE_Services.class.getSimpleName();
 
     public static final String EXTRA_NAME = "android.aviles.bletutorial.Activity_BTLE_Services.NAME";

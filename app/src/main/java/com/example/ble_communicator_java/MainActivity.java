@@ -1,12 +1,13 @@
 package com.example.ble_communicator_java;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.support.v7.app.AppCompatActivity;
+// import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,7 +18,7 @@ import android.widget.ScrollView;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class MainActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener {
     private final static String TAG = MainActivity.class.getSimpleName();
 
     public static final int REQUEST_ENABLE_BT = 1;
