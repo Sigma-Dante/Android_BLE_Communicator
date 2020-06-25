@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "BLE_Communicator_Java"
+rootProject.name = "BLE_Communicator_Kotlin_API23"
