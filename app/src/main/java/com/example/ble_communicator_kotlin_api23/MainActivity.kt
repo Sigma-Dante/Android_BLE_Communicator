@@ -55,6 +55,7 @@ class DeviceScanActivity(
                 }, SCAN_PERIOD)
                 mScanning = true
 
+                
             }
             else -> {
                 mScanning = false
