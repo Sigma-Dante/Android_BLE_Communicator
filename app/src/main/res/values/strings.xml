@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BLE_Communicator_Kotlin_API23</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="button_scan">Scan</string>
 </resources>
