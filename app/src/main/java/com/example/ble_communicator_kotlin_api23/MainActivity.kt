@@ -20,47 +20,4 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
-
-    private val bluetoothAdapter: BluetoothAdapter? by lazy(LazyThreadSafetyMode.NONE) {
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothManager.adapter
-    }
-
-    private val BluetoothAdapter.isDisabled: Boolean
-        get() = !isEnabled
-
-    fun checkBluetooth() {
-        val REQUEST_ENABLE_BT = 1
-        bluetoothAdapter?.takeIf { it.isDisabled }?.apply {
-            val enableBTIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBTIntent, REQUEST_ENABLE_BT)
-        }
-    }
-
 }
-
-class DeviceScanActivity(
-    private val bluetoothAdapter: BluetoothAdapter,
-    private val handler: Handler,
-    private val
-) : ListActivity() {
-    private var mScanning: Boolean = false
-
-    private fun scanLeDevice(enable: Boolean) {
-        when (enable) {
-            true -> {
-                handler.postDelayed({
-                    mScanning = false
-
-                }, SCAN_PERIOD)
-                mScanning = true
-
-
-            }
-            else -> {
-                mScanning = false
-            }
-        }
-    }
-}
-
