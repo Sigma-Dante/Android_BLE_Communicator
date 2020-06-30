@@ -12,6 +12,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.polidea.rxandroidble2.RxBleClient
+import io.reactivex.disposables.Disposable
 
 
 class MainActivity : AppCompatActivity() {
@@ -62,18 +64,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopBLEScan() {
         var result = bluetoothLeScanner?.stopScan(blescancallback)
-        Toast.makeText(this, "Stop scanning", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "", Toast.LENGTH_LONG).show()
         Log.i("Log", String.format("BLE Scan End\" = %d", result))
     }
 
     /** Called when user taps Scan button */
     fun startScanBLE(view: View) {
         startBLEScan()
-        val handler: Handler? = null
-
-        handler?.postDelayed({
+        Handler().postDelayed({
             stopBLEScan()
-        }, 10000)
+        }, 5000)
     }
 }
 
