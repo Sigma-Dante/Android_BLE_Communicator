@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d("ScanDevices", "onRequestPermissionsResult(not PERMISSION_GRANTED)")
                 }
             }
-            else -> super.onRequestPermZXissionsResult(requestCode, permissions, grantResults)
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
