@@ -1,12 +1,9 @@
 package com.example.ble_communicator_kotlin_api23
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
+import android.bluetooth.*
 import android.bluetooth.BluetoothAdapter.STATE_CONNECTED
 import android.bluetooth.BluetoothAdapter.STATE_DISCONNECTED
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -36,21 +33,22 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_ENABLE_BLUETOOTH = 1
     private val REQUEST_ENABLE_LOCATION = 1
 
-    // THe below call did NOT work for scanning BLE.
-    // It would constantly return NULL only
-    // Why? TODO
-    //private val mBluetoothLeScanner: BluetoothLeScanner? = null
+
 
     private val deviceMACAddress = "CE:01:23:D9:13:BE"
 
-    // TODO fix error here, has problem with -E0A9
-    //private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-­E0A9-­E50E24DCCA9E")
-    //private val TX: UUID = UUID.fromString("6E400002-B5A3-F393-­E0A9-­E50E24DCCA9E")
-    //private val RX: UUID = UUID.fromString("6E400003-B5A3-F393-­E0A9-­E50E24DCCA9E")
+    //private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    //private val TX: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9­E50E24DCCA9E")
+    //private val RX: UUID = UUID.fromString("6E400003-B5A3-F393­E0A9­E50E24DCCA9E")
 
 
     private val TAG = MainActivity::class.java.simpleName
 
+
+    // THe below call did NOT work for scanning BLE.
+    // It would constantly return NULL only
+    // Why? TODO
+    //private val mBluetoothLeScanner: BluetoothLeScanner? = null
 
     // THe below call was needed to fix BLE scanning. Why? TODO
     private val mBluetoothLeScanner: BluetoothLeScanner
@@ -59,11 +57,6 @@ class MainActivity : AppCompatActivity() {
             val mbluetoothAdapter = mbluetoothManager.adapter
             return mbluetoothAdapter.bluetoothLeScanner
         }
-
-    // RxAndroidBLE Library Specific
-    // private val rxBleClient = RxBleClient.create(this)
-    // private val scanDisposable: Disposable? = null
-
 
     private fun hasBluetoothLE(){
         // Check if phone has Bluetooth LE
@@ -146,7 +139,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "************************************************************************")
             Log.d(TAG, "Beginning BLE Scan...")
             val device = mbluetoothAdapter?.getRemoteDevice(deviceMACAddress)
-            val bluetoothGatt = device?.connectGatt(this, true, gattCallback)
+            val gattClient = device?.connectGatt(this, true, gattCallback)
             //val service = bluetoothGatt.getService(TX)
             //val characteristic = service.getCharacteristic(TX)
         }
@@ -165,7 +158,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     /** Called when user taps Scan button */
     fun startScanBLE(view: View){
         startBLEScan()
@@ -175,6 +167,9 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+
+
+// blescancallback is needed to pass the results of the scan back to the main function
 val blescancallback = object :ScanCallback() {
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -197,7 +192,16 @@ val blescancallback = object :ScanCallback() {
     }
 }
 
+// gattCallback is needed to pass results of Gatt server to the main function
 val gattCallback = object :BluetoothGattCallback(){
+
+    var characteristic: BluetoothGattCharacteristic? = null
+    var descriptor: BluetoothGattDescriptor? = null
+    private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    private val TXC: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
+    //private val RXC: UUID = UUID.fromString("6E400003-B5A3-F393­E0A9­E50E24DCCA9E")
+    //private val TXD: UUID = UUID.fromString("00002901-0000-1000-8000-00805F9B34FB")
+    private var writeInProgress: Boolean = true
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         super.onConnectionStateChange(gatt, status, newState)
@@ -212,8 +216,15 @@ val gattCallback = object :BluetoothGattCallback(){
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
-        if (status == BluetoothGatt.GATT_SUCCESS){
+        if (status == BluetoothGatt.GATT_SUCCESS) {
             Log.d("Gatt", "Communicating with device")
+            characteristic = gatt?.getService(UART_SERVICE)?.getCharacteristic(TXC)
+            gatt?.setCharacteristicNotification(characteristic, true)
+            //descriptor = characteristic.getDescriptor(TXD)
+            characteristic?.setValue("Hello! From Android Studio")
+            writeInProgress = true
+            gatt?.writeCharacteristic(characteristic)
+            while (writeInProgress) { }
         }
         else {
             Log.d("Gatt", "Failure.... cannot communicate with device")
