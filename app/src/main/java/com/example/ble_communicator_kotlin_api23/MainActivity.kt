@@ -196,12 +196,15 @@ val blescancallback = object :ScanCallback() {
 val gattCallback = object :BluetoothGattCallback(){
 
     var characteristic: BluetoothGattCharacteristic? = null
+    //var characteristic2: BluetoothGattCharacteristic? = null
     var descriptor: BluetoothGattDescriptor? = null
     private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
     private val TXC: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
-    //private val RXC: UUID = UUID.fromString("6E400003-B5A3-F393­E0A9­E50E24DCCA9E")
+    private val RXC: UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
     //private val TXD: UUID = UUID.fromString("00002901-0000-1000-8000-00805F9B34FB")
     private var writeInProgress: Boolean = true
+    val stringToSend = "Hello from Android!"
+    //var statusWrite: Int = 0
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         super.onConnectionStateChange(gatt, status, newState)
@@ -219,15 +222,34 @@ val gattCallback = object :BluetoothGattCallback(){
         if (status == BluetoothGatt.GATT_SUCCESS) {
             Log.d("Gatt", "Communicating with device")
             characteristic = gatt?.getService(UART_SERVICE)?.getCharacteristic(TXC)
+            //characteristic2 = gatt?.getService(UART_SERVICE)?.getCharacteristic(RXC)
             gatt?.setCharacteristicNotification(characteristic, true)
-            //descriptor = characteristic.getDescriptor(TXD)
-            characteristic?.setValue("Hello! From Android Studio")
-            writeInProgress = true
+            //gatt?.setCharacteristicNotification(characteristic2, true)
+            characteristic?.setValue(stringToSend)
             gatt?.writeCharacteristic(characteristic)
-            while (writeInProgress) { }
+            //gatt?.readCharacteristic(characteristic2)
         }
         else {
             Log.d("Gatt", "Failure.... cannot communicate with device")
         }
+    }
+
+    override fun onCharacteristicWrite(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int
+    ) {
+        super.onCharacteristicWrite(gatt, characteristic, status)
+        Log.d("Gatt", "Wrote to characteristic: $stringToSend")
+    }
+
+    override fun onCharacteristicRead(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int
+    ) {
+        super.onCharacteristicRead(gatt, characteristic, status)
+        Log.d("Gatt", "Read Characteristic: $characteristic")
+
     }
 }
