@@ -4,9 +4,8 @@ import android.Manifest
 import android.bluetooth.*
 import android.bluetooth.BluetoothAdapter.STATE_CONNECTED
 import android.bluetooth.BluetoothAdapter.STATE_DISCONNECTED
-import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
+import android.bluetooth.le.*
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,170 +14,165 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.location.LocationManagerCompat
 import java.util.*
 
 
+const val EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE"
+var deviceItemList = ArrayList<String>()
+
 class MainActivity : AppCompatActivity() {
-
-/*    private val mBluetoothLeScanner: BluetoothLeScanner
-    get(){
-        val bluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE)
-        val bluetoothAdapter: BluetoothAdapter? = null
-        return bluetoothAdapter.bluetoothLeScanner
-    }*/
-
     private var mbluetoothAdapter: BluetoothAdapter? = null
     private val REQUEST_ENABLE_BLUETOOTH = 1
     private val REQUEST_ENABLE_LOCATION = 1
-
-
-
     private val deviceMACAddress = "CE:01:23:D9:13:BE"
+    companion object { private const val TAG = "MainActivity" }
 
-    //private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
-    //private val TX: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9­E50E24DCCA9E")
-    //private val RX: UUID = UUID.fromString("6E400003-B5A3-F393­E0A9­E50E24DCCA9E")
-
-
-    private val TAG = MainActivity::class.java.simpleName
-
-
-    // THe below call did NOT work for scanning BLE.
-    // It would constantly return NULL only
-    // Why? TODO
-    //private val mBluetoothLeScanner: BluetoothLeScanner? = null
-
-    // THe below call was needed to fix BLE scanning. Why? TODO
     private val mBluetoothLeScanner: BluetoothLeScanner
-        get() {
-            val mbluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        get() { val mbluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             val mbluetoothAdapter = mbluetoothManager.adapter
-            return mbluetoothAdapter.bluetoothLeScanner
-        }
+            return mbluetoothAdapter.bluetoothLeScanner }
 
-    private fun hasBluetoothLE(){
-        // Check if phone has Bluetooth LE
-        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Log.d(TAG, "Bluetooth LE not supported on device")
-        }
+    // Checks if the device has Bluetooth and Bluetooth Low Energy Modules
+    private fun initialCheckBluetooth() {
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+            val bluetoothUnavailableText = "Bluetooth is not supported on this device"
+            Log.d(TAG, bluetoothUnavailableText)
+            Toast.makeText(this, bluetoothUnavailableText, Toast.LENGTH_SHORT).show()}
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+            val bluetoothLEUnavailableText = "Bluetooth LE is not supported on this device"
+            Log.d(TAG, bluetoothLEUnavailableText)
+            Toast.makeText(this, bluetoothLEUnavailableText, Toast.LENGTH_SHORT).show()}
+    }
 
-        // Checks if bluetooth adapter is disabled or not and if disabled ask user to enable bluetooth
+    // runtime function to check if user has bluetooth enabled
+    private fun runtimeCheckBluetooth() {
         mbluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (mbluetoothAdapter == null) {
-            Log.d(TAG, "No Bluetooth module in device")
-        }
+            Log.d(TAG, "BluetoothAdapter unable to resolve") }
         if (!mbluetoothAdapter!!.isEnabled) {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBluetoothIntent, REQUEST_ENABLE_BLUETOOTH)
-            Log.d(TAG, "Requesting to enable Bluetooth...")
-        }
-        else {
-            Log.d(TAG, "Bluetooth already enabled: $mbluetoothAdapter")
-        }
+            Log.d(TAG, "Requesting from user to enable Bluetooth...") }
+        else { Log.d(TAG, "Bluetooth already enabled: $mbluetoothAdapter") }
     }
 
-    // This function checks for ACCESS_FINE_LOCATION permissions and LOCATION_SERVICE
-    private fun checkLocation() {
-
+    // Checks for ACCESS_FINE_LOCATION permissions and LOCATION_SERVICE
+    private fun runtimeCheckLocation() {
         // Checks ACCESS_FINE_LOCATION
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Permission already granted: ACCESS_FINE_LOCATION")
-        }
-        else {
-            // If ACCESS_FINE_LOCATION is not permitted, then request user to allow
-            requestPermissions(
+            Log.d(TAG, "Permission already granted: ACCESS_FINE_LOCATION") }
+        else { requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_ENABLE_LOCATION)
-            Log.d(TAG, "Requesting from user ACCESS_FINE_LOCATION....")
-        }
+            Log.d(TAG, "Requesting from user to grant permission ACCESS_FINE_LOCATION....") }
         val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         // Checks LOCATION_SERVICE
         if (!LocationManagerCompat.isLocationEnabled(lm)){
-            Log.d(TAG, "Location Source settings was disabled, requesting user to approve...")
-            // Start Location Settings Activity
-            startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-        }
-        else{ Log.d(TAG, "Location Source settings are enabled") }
+            Log.d(TAG, "Location Source settings were disabled, requesting from user to approve...")
+            startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+        else{ Log.d(TAG, "Location Source settings are already enabled") }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initialCheckBluetooth()
     }
 
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()
-        hasBluetoothLE()
-        checkLocation()
+        runtimeCheckBluetooth()
+        runtimeCheckLocation()
         }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             1 -> when (grantResults) {
                 intArrayOf(PackageManager.PERMISSION_GRANTED) -> {
-                    Log.d(TAG, "Permission request Granted: Access Fine Location")
-                }
-                else -> {
-                    Log.d(TAG, "Permission request Denied: Access Fine Location")
-                }
+                    Log.d(TAG, "Permission request Granted: Access Fine Location") }
+                else -> { Log.d(TAG, "Permission request Denied: Access Fine Location") }
             }
         }
     }
 
     private fun startBLEScan() {
-        if (mBluetoothLeScanner == null) {
-            Log.d(TAG, "mBluetoothLeScanner is null")
-        } else {
-            mBluetoothLeScanner?.startScan(blescancallback)
-            //Toast.makeText(this, "Scanning...", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "************************************************************************")
-            Log.d(TAG, "Beginning BLE Scan...")
-            val device = mbluetoothAdapter?.getRemoteDevice(deviceMACAddress)
-            val gattClient = device?.connectGatt(this, true, gattCallback)
-            //val service = bluetoothGatt.getService(TX)
-            //val characteristic = service.getCharacteristic(TX)
-        }
+        // Scan Filter requirements
+        val scanFilter = ScanFilter.Builder().setDeviceAddress(deviceMACAddress).build()
+        val scanFilterList = listOf(scanFilter)
+        val scanSettings = ScanSettings.Builder().setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+
+        Log.d(TAG, "Beginning BLE Scan...")
+        Toast.makeText(this, "Scanning...", Toast.LENGTH_SHORT).show()
+
+        // var deviceItemList = ArrayList<String>()
+        var pairedDevices: Set<BluetoothDevice> = mbluetoothAdapter?.bondedDevices as Set<BluetoothDevice>
+        if (pairedDevices.isNotEmpty()) {
+            for (device in pairedDevices) {
+                val newDevice = "${device.name} :: ${device.address}"
+                deviceItemList.add(newDevice) } }
+
+        // Start Scan
+        // mBluetoothLeScanner?.startScan(blescancallback) // No filter
+        mBluetoothLeScanner.startScan(scanFilterList,scanSettings,blescancallback) // filtered
+
+        val arrayAdapter: ArrayAdapter<*>
+        var mListView = findViewById<ListView>(R.id.userlist)
+        arrayAdapter = ArrayAdapter(this,
+            android.R.layout.simple_list_item_1, deviceItemList)
+        mListView.adapter = arrayAdapter
+
+        // Connect GATT (removes from DeviceListActivity if connected here)
+        //connectGATT()
+
+        // Send to Command Menu
+        //val intent = Intent(this, CommandsMenu::class.java)
+        //startActivity(intent)
     }
 
+    fun connectGATT(){
+        Log.d(TAG, "Function: connectGATT running from MainActivity")
+        val device = mbluetoothAdapter?.getRemoteDevice(deviceMACAddress)
+        val gattClient = device?.connectGatt(this, true, gattCallback)
+    }
 
     private fun stopBLEScan() {
-        if (mBluetoothLeScanner == null) {
-            Log.d(TAG, "mBluetoothLeScanner is null")
-        } else {
-            mBluetoothLeScanner?.stopScan(blescancallback)
-            mBluetoothLeScanner?.flushPendingScanResults(blescancallback)
-            //Toast.makeText(this, "Scan end", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "Ending BLE Scan...")
-            Log.d(TAG, "------------------------------------------------------------------------")
-        }
+        mBluetoothLeScanner.stopScan(blescancallback)
+        mBluetoothLeScanner.flushPendingScanResults(blescancallback)
+        Log.d(TAG, "Ending BLE Scan...")
+        deviceItemList.clear()
     }
 
     /** Called when user taps Scan button */
-    fun startScanBLE(view: View){
+    fun buttonScanBLE(view: View){
         startBLEScan()
-        Handler().postDelayed({
-            stopBLEScan()
-        }, 30000)
+        // Scan for 10s then stop
+        Handler().postDelayed({stopBLEScan()}, 10000)
+    }
+
+    fun buttonConnectGATT(view:View){
+        connectGATT()
     }
 }
-
-
 
 // blescancallback is needed to pass the results of the scan back to the main function
 val blescancallback = object :ScanCallback() {
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {
         super.onScanResult(callbackType, result)
-        println(result?.device?.name)
-        Log.d(
-            "DeviceListActivity",
-            "onScanResult: ${result?.device?.address} - ${result?.device?.name}"
-        )
+        val deviceToAdd = "${result?.device?.name} :: ${result?.device?.address}"
+        if (!deviceItemList.contains(deviceToAdd)) {
+            deviceItemList.add(deviceToAdd)
+        }
+        Log.d("DeviceListActivity",
+            "onScanResult: ${result?.device?.address} - ${result?.device?.name}")
     }
 
     override fun onBatchScanResults(results: MutableList<ScanResult>?) {
@@ -195,14 +189,14 @@ val blescancallback = object :ScanCallback() {
 // gattCallback is needed to pass results of Gatt server to the main function
 val gattCallback = object :BluetoothGattCallback(){
 
-    var characteristic: BluetoothGattCharacteristic? = null
+    var writeCharacteristic: BluetoothGattCharacteristic? = null
     //var characteristic2: BluetoothGattCharacteristic? = null
-    var descriptor: BluetoothGattDescriptor? = null
+    //var descriptor: BluetoothGattDescriptor? = null
     private val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
     private val TXC: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
-    private val RXC: UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
+    //private val RXC: UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
     //private val TXD: UUID = UUID.fromString("00002901-0000-1000-8000-00805F9B34FB")
-    private var writeInProgress: Boolean = true
+    //private var writeInProgress: Boolean = true
     val stringToSend = "Hello from Android!"
     //var statusWrite: Int = 0
 
@@ -221,12 +215,12 @@ val gattCallback = object :BluetoothGattCallback(){
         super.onServicesDiscovered(gatt, status)
         if (status == BluetoothGatt.GATT_SUCCESS) {
             Log.d("Gatt", "Communicating with device")
-            characteristic = gatt?.getService(UART_SERVICE)?.getCharacteristic(TXC)
+            writeCharacteristic = gatt?.getService(UART_SERVICE)?.getCharacteristic(TXC)
             //characteristic2 = gatt?.getService(UART_SERVICE)?.getCharacteristic(RXC)
-            gatt?.setCharacteristicNotification(characteristic, true)
+            gatt?.setCharacteristicNotification(writeCharacteristic, true)
             //gatt?.setCharacteristicNotification(characteristic2, true)
-            characteristic?.setValue(stringToSend)
-            gatt?.writeCharacteristic(characteristic)
+            writeCharacteristic?.setValue(stringToSend)
+            gatt?.writeCharacteristic(writeCharacteristic)
             //gatt?.readCharacteristic(characteristic2)
         }
         else {
