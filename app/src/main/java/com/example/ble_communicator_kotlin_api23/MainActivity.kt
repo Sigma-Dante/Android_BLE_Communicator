@@ -93,7 +93,10 @@ class MainActivity : AppCompatActivity() {
         runtimeCheckLocation()
         }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray) {
         when (requestCode) {
             1 -> when (grantResults) {
                 intArrayOf(PackageManager.PERMISSION_GRANTED) -> {
