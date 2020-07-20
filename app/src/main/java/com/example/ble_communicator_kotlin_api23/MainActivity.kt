@@ -146,6 +146,8 @@ class MainActivity : AppCompatActivity() {
         val textToSend = editText.text.toString()
         Log.d(TAG, "Sending Text: $textToSend")
         bluetoothFragment.writeGATT(gattClient, textToSend)
+        // TODO: create a new function button for reading and GET IT TO WORK
+        //bluetoothFragment.readGATT(gattClient)
         editText.text.clear()
     }
 

@@ -22,6 +22,7 @@ class BluetoothFragment : ListFragment() {
     private var mBluetoothLeScanner: BluetoothLeScanner? = null
     private var mHandler: Handler? = null
     private var mScanning: Boolean = false
+    private var readValue: String? = null
 
     // Functions
     fun setBluetoothAdapter(btAdapter: BluetoothAdapter?): Unit {
@@ -102,12 +103,17 @@ class BluetoothFragment : ListFragment() {
         gattClient?.writeCharacteristic(writeCharacteristic)
     }
 
+    fun readGATT(gattClient: BluetoothGatt?){
+        Log.d("GATT", "Attempting to read characteristic")
+        var readCharacteristic = gattClient?.getService(Constants().UART_SERVICE)?.getCharacteristic(Constants().RXC)
+        gattClient?.readCharacteristic(readCharacteristic)
+        Log.d(TAG, "$readValue")
+    }
+
     // gattCallback is needed to pass results of Gatt server to the main function
     private val gattCallback = object : BluetoothGattCallback(){
 
         var writeCharacteristic: BluetoothGattCharacteristic? = null
-        //var characteristic2: BluetoothGattCharacteristic? = null
-        //var descriptor: BluetoothGattDescriptor? = null
         val stringToSend = "Hello from Android!"
 
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -125,13 +131,6 @@ class BluetoothFragment : ListFragment() {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d("Gatt", "Successfully connected with GATT Profile")
-                //writeCharacteristic = gatt?.getService(Constants().UART_SERVICE)?.getCharacteristic(Constants().TXC)
-                //characteristic2 = gatt?.getService(UART_SERVICE)?.getCharacteristic(RXC)
-                //gatt?.setCharacteristicNotification(writeCharacteristic, true)
-                //gatt?.setCharacteristicNotification(characteristic2, true)
-                //writeCharacteristic?.setValue(stringToSend)
-                //gatt?.writeCharacteristic(writeCharacteristic)
-                //gatt?.readCharacteristic(characteristic2)
             }
             else {
                 Log.d("Gatt", "Cannot connect with GATT Profile")
@@ -154,6 +153,16 @@ class BluetoothFragment : ListFragment() {
         ) {
             super.onCharacteristicRead(gatt, characteristic, status)
             Log.d("Gatt", "Read Characteristic: $characteristic")
+            readValue = characteristic?.value.toString()
+        }
+
+        override fun onDescriptorRead(
+            gatt: BluetoothGatt?,
+            descriptor: BluetoothGattDescriptor?,
+            status: Int
+        ) {
+            super.onDescriptorRead(gatt, descriptor, status)
+            Log.d("Gatt", "Read Descriptor: $descriptor")
         }
     }
 }
