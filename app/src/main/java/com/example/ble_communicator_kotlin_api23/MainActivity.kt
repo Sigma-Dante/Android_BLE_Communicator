@@ -116,6 +116,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        // Closes the GATT client connection to preserve resources and open Bluetooth connection slot
+        gattClient?.close()
+    }
+
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()
