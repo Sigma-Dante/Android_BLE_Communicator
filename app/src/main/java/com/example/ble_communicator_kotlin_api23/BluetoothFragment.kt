@@ -113,9 +113,6 @@ class BluetoothFragment : ListFragment() {
     // gattCallback is needed to pass results of Gatt server to the main function
     private val gattCallback = object : BluetoothGattCallback(){
 
-        var writeCharacteristic: BluetoothGattCharacteristic? = null
-        val stringToSend = "Hello from Android!"
-
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothAdapter.STATE_CONNECTED){
