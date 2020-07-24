@@ -4,6 +4,7 @@
     <string name="button_scan">Scan</string>
     <string name="button_connect">Connect</string>
     <string name="button_send">Send</string>
+    <string name="button_Read">Read</string>
     <string name="unknown_device">Unknown</string>
 
 

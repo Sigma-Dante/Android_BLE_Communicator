@@ -2,7 +2,6 @@ package com.example.ble_communicator_kotlin_api23
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -13,18 +12,24 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.location.LocationManagerCompat
-import androidx.fragment.app.FragmentTransaction
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
-class MainActivity : AppCompatActivity() {
+
+class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener {
     // Log TAG
     companion object { private const val TAG = "MainActivity" }
     // Bluetooth
     private var mbluetoothAdapter: BluetoothAdapter? = null
     private var mbluetoothManager: BluetoothManager? = null
     private var gattClient: BluetoothGatt? = null
+
+    var adapter: RecyclerViewAdapter? = null
 
     // Instantiate the Bluetooth Fragment
     private var bluetoothFragment = BluetoothFragment()
@@ -87,11 +92,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun displayResults(){
         val deviceItemList = bluetoothFragment.sendResults()
-        val arrayAdapter: ArrayAdapter<*>
-        var mListView = findViewById<ListView>(R.id.device_list)
-        arrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, deviceItemList)
-        mListView.adapter = arrayAdapter
-        // arrayAdapter.notifyDataSetChanged()
+        val recyclerView: RecyclerView = findViewById<RecyclerView>(R.id.rv_device_list)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val dividerItemDecoration = DividerItemDecoration(
+            recyclerView.context,
+            (recyclerView.layoutManager as LinearLayoutManager).orientation
+        )
+        recyclerView.addItemDecoration(dividerItemDecoration)
+        adapter = RecyclerViewAdapter(this, deviceItemList)
+        adapter!!.setClickListener(this)
+        recyclerView.adapter = adapter
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -137,18 +147,27 @@ class MainActivity : AppCompatActivity() {
         Handler().postDelayed({displayResults()}, 2000)
     }
 
+    /** Called when user taps Connect button */
     fun buttonConnectGATT(view:View){
-        gattClient =  bluetoothFragment.connectGATT(this)
+        //gattClient =  bluetoothFragment.connectGATT(this)
     }
 
+    /** Called when user taps Send button */
     fun buttonSendGATT(view:View){
         val editText = findViewById<EditText>(R.id.msgGATT)
         val textToSend = editText.text.toString()
         Log.d(TAG, "Sending Text: $textToSend")
         bluetoothFragment.writeGATT(gattClient, textToSend)
-        // TODO: create a new function button for reading and GET IT TO WORK
-        //bluetoothFragment.readGATT(gattClient)
         editText.text.clear()
+    }
+
+    fun buttonReadGatt(view:View){
+        Log.d(TAG, "buttonReadGatt()")
+        var msgToDisplay = bluetoothFragment.readGATT(gattClient)
+        val readText = findViewById<EditText>(R.id.readGATT)
+        readText.text.clear()
+        readText.setText(msgToDisplay)
+
     }
 
     private fun setupFragments() {
@@ -156,5 +175,13 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "setupFragments()")
         Log.d(TAG, "$mbluetoothAdapter")
         bluetoothFragment.setBluetoothAdapter(mbluetoothAdapter)
+    }
+
+    override fun onItemClick(view: View?, position: Int) {
+        val deviceClicked = adapter?.getItem(position)
+        val index = deviceClicked?.indexOf("\n")
+        val deviceClickedMAC = deviceClicked?.substring(index!!)?.trim()
+        gattClient = bluetoothFragment.connectGATT(this, deviceClickedMAC)
+        //Toast.makeText(this, "You clicked $deviceClickedMAC on row number $position", Toast.LENGTH_SHORT).show();
     }
 }
