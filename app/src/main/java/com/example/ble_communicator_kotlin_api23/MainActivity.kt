@@ -11,14 +11,18 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.location.LocationManagerCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener {
@@ -38,18 +42,16 @@ class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener 
     private fun initialCheckBluetooth(): Boolean {
         var bluetoothCheck: Boolean = true
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
-            val bluetoothUnavailableText = "Bluetooth is not supported on this device"
-            Log.d(TAG, bluetoothUnavailableText)
-            Toast.makeText(this, bluetoothUnavailableText, Toast.LENGTH_SHORT).show()
+            Log.d(TAG, Constants().bluetoothUnavailableText)
+            Toast.makeText(this, Constants().bluetoothUnavailableText, Toast.LENGTH_SHORT).show()
             bluetoothCheck = false
             return bluetoothCheck
         }
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            val bluetoothLEUnavailableText = "Bluetooth LE is not supported on this device"
-            Log.d(TAG, bluetoothLEUnavailableText)
-            Toast.makeText(this, bluetoothLEUnavailableText, Toast.LENGTH_SHORT).show()
+            Log.d(TAG, Constants().bluetoothLEUnavailableText)
+            Toast.makeText(this, Constants().bluetoothLEUnavailableText, Toast.LENGTH_SHORT).show()
             bluetoothCheck = false
-            return false
+            return bluetoothCheck
         }
         return bluetoothCheck
     }
@@ -114,10 +116,33 @@ class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener 
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id: Int = item.itemId
+
+        if (id == R.id.action_disconnect) {
+            Log.d(TAG, "Attempting GATT disconnect...")
+            gattClient?.close()
+            return true
+        }
+
+        if (id == R.id.action_scan){
+            scanMenu()
+            return true
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val toolbar:androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
         bluetoothFragment = BluetoothFragment()
         var isBluetoothAvailable = initialCheckBluetooth()
         if (isBluetoothAvailable) {
@@ -133,23 +158,17 @@ class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener 
     }
 
     override fun onStart() {
-        Log.d(TAG, "onStart()")
         super.onStart()
         runtimeCheckLocation()
         runtimeCheckBluetooth()
         }
 
     /** Called when user taps Scan button */
-    fun buttonScanBLE(view: View){
+    private fun scanMenu(){
         Handler().postDelayed({bluetoothFragment.bleScan(false, false)}, Constants().SCAN_PERIOD)
         bluetoothFragment.bleScan(true, false)
         Toast.makeText(this, "Scanning", Toast.LENGTH_SHORT).show()
         Handler().postDelayed({displayResults()}, 2000)
-    }
-
-    /** Called when user taps Connect button */
-    fun buttonConnectGATT(view:View){
-        //gattClient =  bluetoothFragment.connectGATT(this)
     }
 
     /** Called when user taps Send button */
@@ -167,13 +186,10 @@ class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener 
         val readText = findViewById<EditText>(R.id.readGATT)
         readText.text.clear()
         readText.setText(msgToDisplay)
-
     }
 
     private fun setupFragments() {
         // val transaction: FragmentTransaction = supportFragmentManager.beginTransaction()
-        Log.d(TAG, "setupFragments()")
-        Log.d(TAG, "$mbluetoothAdapter")
         bluetoothFragment.setBluetoothAdapter(mbluetoothAdapter)
     }
 

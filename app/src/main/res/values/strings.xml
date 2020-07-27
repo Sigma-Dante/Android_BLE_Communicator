@@ -1,11 +1,12 @@
 <resources>
-    <string name="app_name">Tricca Bluetooth Application</string>
+    <string name="app_name">Tricca Sensor</string>
     <string name="edit_message">Enter a message</string>
     <string name="button_scan">Scan</string>
     <string name="button_connect">Connect</string>
     <string name="button_send">Send</string>
     <string name="button_Read">Read</string>
     <string name="unknown_device">Unknown</string>
+    <string name="disconnect">DISCONNECT</string>
 
 
     <string name="empty_list">No devices found - refresh to try again.</string>

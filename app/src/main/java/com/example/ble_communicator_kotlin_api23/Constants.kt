@@ -6,6 +6,8 @@ class Constants {
     // Permission Requests
     val REQUEST_ENABLE_LOCATION = 1
     val REQUEST_ENABLE_BLUETOOTH = 1
+    val bluetoothUnavailableText = "Bluetooth is not supported on this device"
+    val bluetoothLEUnavailableText = "Bluetooth LE is not supported on this device"
 
     // UUID's
     val UART_SERVICE: UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")

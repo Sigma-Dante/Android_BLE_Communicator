@@ -69,6 +69,10 @@ class BluetoothFragment : ListFragment() {
         }
     }
 
+    fun disconnectGATT(){
+
+    }
+
     fun sendResults(): MutableList<String> {
         //return deviceListArray
         return deviceStringArray
