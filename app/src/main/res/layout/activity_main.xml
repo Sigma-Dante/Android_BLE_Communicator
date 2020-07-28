@@ -7,12 +7,12 @@
     android:orientation="vertical">
 
     <include
-        android:id="@+id/toolbar"
+        android:id="@+id/scan_toolbar"
         layout="@layout/toolbar" />
 
 
     <View
-        android:id="@+id/divider"
+        android:id="@+id/list_divider"
         android:layout_width="409dp"
         android:layout_height="5dp"
         android:layout_marginBottom="16dp"
@@ -33,12 +33,12 @@
         android:hint="@string/edit_message"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button"
+        app:layout_constraintEnd_toStartOf="@+id/scan_send_button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/scan_send_button"
         android:layout_width="83dp"
         android:layout_height="47dp"
         android:layout_marginTop="16dp"
@@ -48,10 +48,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/msgGATT"
-        app:layout_constraintTop_toBottomOf="@+id/divider" />
+        app:layout_constraintTop_toBottomOf="@+id/list_divider" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/scan_read_button"
         android:layout_width="wrap_content"
         android:layout_height="47dp"
         android:layout_marginStart="32dp"
@@ -61,7 +61,7 @@
         app:layout_constraintEnd_toStartOf="@+id/readGATT"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/scan_send_button" />
 
     <EditText
         android:id="@+id/readGATT"
@@ -74,7 +74,7 @@
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/button4"
+        app:layout_constraintStart_toEndOf="@+id/scan_read_button"
         app:layout_constraintTop_toBottomOf="@+id/msgGATT" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -83,9 +83,9 @@
         android:layout_height="0dp"
         android:layout_marginBottom="16dp"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/divider"
+        app:layout_constraintBottom_toTopOf="@+id/list_divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintTop_toBottomOf="@+id/scan_toolbar"
         tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

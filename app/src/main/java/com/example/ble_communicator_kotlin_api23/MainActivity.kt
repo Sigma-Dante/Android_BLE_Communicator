@@ -16,13 +16,11 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.location.LocationManagerCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener {
@@ -141,7 +139,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewAdapter.ItemClickListener 
         Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val toolbar:androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
+        val toolbar:androidx.appcompat.widget.Toolbar = findViewById(R.id.scan_toolbar)
         setSupportActionBar(toolbar)
         bluetoothFragment = BluetoothFragment()
         var isBluetoothAvailable = initialCheckBluetooth()
