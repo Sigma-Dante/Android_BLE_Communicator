@@ -1,2 +1,2 @@
-include ':app'
+include ':myapp'
 rootProject.name = "BLE_Communicator_Kotlin_API23"
